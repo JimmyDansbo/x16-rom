@@ -1305,28 +1305,46 @@ cursor_blink:
 	jsr screen_save_state
 	lda #20         ;reset blink counter
 	sta blnct
-	ldy pntr        ;cursor position
-	ldx gdcol
-	jsr screen_get_char
-	lsr blnon       ;carry set if original char
-	bcs @1          ;branch if not needed
-	inc blnon       ;set to 1
-	sta gdbln       ;save original char
-	jsr screen_get_color_cont
-	stx gdcol       ;save original color
-	ldx color       ;blink in this color
-@1	bit mode
-	bvc @3          ;not ISO
-	cmp isocurch
-	bne @2
-	lda gdbln
-	bra @4
-@2	lda isocurch
-	bra @4
-@3	eor #$80        ;blink it
-@4	ldy pntr
-	jsr screen_set_char_color       ;display it
-	jsr screen_restore_state
+;	.byte $db
+	ldy pntr
+	jsr screen_get_char_color
+	sta gdbln
+	stx gdcol
+	txa
+	asl
+	adc #$80
+	rol
+	asl
+	adc #$80
+	rol
+;	ldy pntr
+	jsr screen_set_color
+	lsr blnon
+	bcs @1
+	inc blnon
+
+;	ldy pntr        ;cursor position
+;	ldx gdcol
+;	jsr screen_get_char
+;	lsr blnon       ;carry set if original char
+;	bcs @1          ;branch if not needed
+;	inc blnon       ;set to 1
+;	sta gdbln       ;save original char
+;	jsr screen_get_color_cont
+;	stx gdcol       ;save original color
+;	ldx color       ;blink in this color
+;@1	bit mode
+;	bvc @3          ;not ISO
+;	cmp isocurch
+;	bne @2
+;	lda gdbln
+;	bra @4
+;@2	lda isocurch
+;	bra @4
+;@3	eor #$80        ;blink it
+;@4	ldy pntr
+;	jsr screen_set_char_color       ;display it
+@1	jsr screen_restore_state
 
 @5	KVARS_END_TRASH_A_NZ
 	rts
